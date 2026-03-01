@@ -26,6 +26,7 @@ import { ConversationsModule } from './conversations/conversations.module';
       url: process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/farmacia',
       entities: [MedPrice, PdfVersion, Conversation, QueryLog, BroadcastContact, Campaign, ChatMessage],
       synchronize: true,
+      ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
     }),
     WebhookModule,
     SendModule,

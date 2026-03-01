@@ -37,6 +37,6 @@ FROM base
 # Copy built application
 COPY --from=build /app /app
 
-# Start the server by default, this can be overwritten at runtime
-EXPOSE 3000
-CMD [ "npm", "run", "start" ]
+# Start the pre-built server; Fly expects 0.0.0.0:8080 (PORT set in fly.toml)
+EXPOSE 8080
+CMD [ "node", "dist/main.js" ]
