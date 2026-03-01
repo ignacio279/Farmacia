@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Post, Query, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Patch, Param, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BroadcastService } from './broadcast.service';
 
@@ -15,7 +15,45 @@ export class BroadcastController {
   async listContacts(@Headers('x-api-key') apiKey: string) {
     this.checkApiKey(apiKey);
     const contacts = await this.broadcast.getAllContacts();
-    return { count: contacts.length, contacts: contacts.map((c) => ({ id: c.id, waUserId: c.waUserId, name: c.name })) };
+    return {
+      count: contacts.length,
+      contacts: contacts.map((c) => ({
+        id: c.id,
+        waUserId: c.waUserId,
+        name: c.name,
+        email: c.email,
+        birthday: c.birthday,
+        createdAt: c.createdAt,
+      })),
+    };
+  }
+
+  @Patch('contacts/:id')
+  async updateContact(
+    @Headers('x-api-key') apiKey: string,
+    @Param('id') id: string,
+    @Body() body: { name?: string; email?: string; birthday?: string },
+  ) {
+    this.checkApiKey(apiKey);
+    const contact = await this.broadcast.updateContact(id, {
+      name: body.name,
+      email: body.email,
+      birthday: body.birthday,
+    });
+    if (!contact) {
+      return { ok: false, error: 'Contact not found' };
+    }
+    return {
+      ok: true,
+      contact: {
+        id: contact.id,
+        waUserId: contact.waUserId,
+        name: contact.name,
+        email: contact.email,
+        birthday: contact.birthday,
+        createdAt: contact.createdAt,
+      },
+    };
   }
 
   @Post()

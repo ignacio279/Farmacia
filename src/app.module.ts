@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from './config/configuration';
 import { BroadcastContact } from './entities/broadcast-contact.entity';
 import { Campaign } from './entities/campaign.entity';
+import { ChatMessage } from './entities/chat-message.entity';
 import { Conversation } from './entities/conversation.entity';
 import { MedPrice } from './entities/med-price.entity';
 import { PdfVersion } from './entities/pdf-version.entity';
@@ -14,6 +15,7 @@ import { SendModule } from './send/send.module';
 import { TestModule } from './test/test.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { BroadcastModule } from './broadcast/broadcast.module';
+import { ConversationsModule } from './conversations/conversations.module';
 
 @Module({
   imports: [
@@ -22,12 +24,13 @@ import { BroadcastModule } from './broadcast/broadcast.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/farmacia',
-      entities: [MedPrice, PdfVersion, Conversation, QueryLog, BroadcastContact, Campaign],
+      entities: [MedPrice, PdfVersion, Conversation, QueryLog, BroadcastContact, Campaign, ChatMessage],
       synchronize: true,
     }),
     WebhookModule,
     SendModule,
     BroadcastModule,
+    ConversationsModule,
     TestModule,
     PdfSyncModule,
   ],

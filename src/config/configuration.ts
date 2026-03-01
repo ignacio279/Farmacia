@@ -30,4 +30,7 @@ export default () => ({
   welcome: {
     message: process.env.WELCOME_MESSAGE ?? '',
   },
+  dashboard: {
+    origin: process.env.DASHBOARD_ORIGIN ?? 'http://localhost:3001',
+  },
 });

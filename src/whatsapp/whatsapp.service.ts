@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosError } from 'axios';
+import { ChatMessageService } from '../conversations/chat-message.service';
 
 @Injectable()
 export class WhatsAppService {
@@ -8,7 +9,10 @@ export class WhatsAppService {
   private readonly accessToken: string;
   private readonly phoneNumberId: string;
 
-  constructor(private config: ConfigService) {
+  constructor(
+    private config: ConfigService,
+    private chatMessage: ChatMessageService,
+  ) {
     this.accessToken = this.config.get<string>('meta.accessToken') ?? '';
     this.phoneNumberId = this.config.get<string>('meta.phoneNumberId') ?? '';
   }
@@ -45,6 +49,7 @@ export class WhatsAppService {
           },
         },
       );
+      await this.chatMessage.saveOutgoing(normalizedTo, body);
     } catch (err) {
       const axiosErr = err as AxiosError;
       const detail = axiosErr.response?.data

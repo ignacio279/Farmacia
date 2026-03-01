@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --farmacia-green: #0d9488;
+  --farmacia-green-dark: #0f766e;
+  --farmacia-green-light: #5eead4;
+  --farmacia-green-pale: #ccfbf1;
+}
+
+body {
+  @apply bg-white text-gray-900;
+}

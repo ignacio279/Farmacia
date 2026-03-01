@@ -1,11 +1,18 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: false });
+  const config = app.get(ConfigService);
+  const dashboardOrigin = config.get<string>('dashboard.origin');
+  app.enableCors({
+    origin: dashboardOrigin ? dashboardOrigin.split(',').map((o) => o.trim()) : true,
+    credentials: true,
+  });
   app.use(
     express.json({
       verify: (req: express.Request & { rawBody?: Buffer }, _res, buf) => {

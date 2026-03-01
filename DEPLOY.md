@@ -75,6 +75,12 @@ Para avisos tipo descuento, cumpleaños o anuncios (se guarda historial y podés
 - **Ejemplo cumpleaños**: `{ "type": "birthday", "message": "¡Feliz cumpleaños {{name}}! Te esperamos con un regalo." }`
 - **Listar campañas**: `GET /broadcast/campaigns?limit=20` con `x-api-key`.
 
+### Panel web (dashboard)
+
+- **Ubicación**: carpeta `dashboard/` (Next.js). Ejecutar con `npm run dev` (puerto 3001) o desplegar en Vercel.
+- **Variables del dashboard**: `NEXT_PUBLIC_API_URL` (URL del backend) y `NEXT_PUBLIC_SEND_API_KEY` (misma que `SEND_API_KEY`).
+- **Backend CORS**: definir `DASHBOARD_ORIGIN` con la URL del panel (ej. `https://tu-panel.vercel.app` o `http://localhost:3001`). Varios orígenes separados por coma.
+
 ### 4. Seguridad antes de subir
 
 - [ ] **Quitar credenciales de .env.example** (ya no poner `OPENAI_API_KEY` real)

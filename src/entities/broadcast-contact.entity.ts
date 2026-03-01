@@ -13,6 +13,12 @@ export class BroadcastContact {
   @Column({ type: 'varchar', nullable: true, length: 100 })
   name: string | null;
 
+  @Column({ type: 'varchar', nullable: true, length: 255 })
+  email: string | null;
+
+  @Column({ type: 'varchar', nullable: true, length: 10 })
+  birthday: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

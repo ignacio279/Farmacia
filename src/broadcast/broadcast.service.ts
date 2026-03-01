@@ -35,6 +35,18 @@ export class BroadcastService {
     return this.repo.find({ order: { createdAt: 'ASC' } });
   }
 
+  async updateContact(
+    id: string,
+    data: { name?: string | null; email?: string | null; birthday?: string | null },
+  ): Promise<BroadcastContact | null> {
+    const contact = await this.repo.findOne({ where: { id } });
+    if (!contact) return null;
+    if (data.name !== undefined) contact.name = data.name?.trim() || null;
+    if (data.email !== undefined) contact.email = data.email?.trim() || null;
+    if (data.birthday !== undefined) contact.birthday = data.birthday?.trim() || null;
+    return this.repo.save(contact);
+  }
+
   async sendToAll(message: string): Promise<{ sent: number; failed: number }> {
     const contacts = await this.getAllContacts();
     let sent = 0;

@@ -14,6 +14,7 @@ import type { Response } from 'express';
 import { MessageHandlerService } from '../handlers/message-handler.service';
 import { WebhookSignatureGuard } from './webhook.verification.guard';
 import { BroadcastService } from '../broadcast/broadcast.service';
+import { ChatMessageService } from '../conversations/chat-message.service';
 
 @Controller('webhook/whatsapp')
 export class WebhookController {
@@ -21,6 +22,7 @@ export class WebhookController {
     private config: ConfigService,
     private messageHandler: MessageHandlerService,
     private broadcastService: BroadcastService,
+    private chatMessage: ChatMessageService,
   ) {}
 
   @Get()
@@ -68,6 +70,7 @@ export class WebhookController {
         const messages = change.value?.messages ?? [];
         for (const msg of messages) {
           if (msg.type === 'text' && msg.text?.body) {
+            this.chatMessage.saveIncoming(msg.from, msg.text.body).catch(() => {});
             this.broadcastService.addContact(msg.from).catch(() => {});
             this.messageHandler
               .handle(msg.from, msg.text.body)
