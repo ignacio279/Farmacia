@@ -1,16 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getContacts, updateContact } from '@/lib/api';
-
-type Contact = {
-  id: string;
-  waUserId: string;
-  name: string | null;
-  email: string | null;
-  birthday: string | null;
-  createdAt: string;
-};
+import { getContacts, updateContact, type Contact } from '@/lib/api';
 
 export default function ClientesPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);

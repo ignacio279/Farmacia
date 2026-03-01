@@ -11,24 +11,26 @@ function headers(): HeadersInit {
 
 export async function getContacts(): Promise<{
   count: number;
-  contacts: Array<{
-    id: string;
-    waUserId: string;
-    name: string | null;
-    email: string | null;
-    birthday: string | null;
-    createdAt: string;
-  }>;
+  contacts: Contact[];
 }> {
   const res = await fetch(`${API_URL}/broadcast/contacts`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
+export interface Contact {
+  id: string;
+  waUserId: string;
+  name: string | null;
+  email: string | null;
+  birthday: string | null;
+  createdAt: string;
+}
+
 export async function updateContact(
   id: string,
   data: { name?: string; email?: string; birthday?: string }
-): Promise<{ ok: boolean; contact?: unknown; error?: string }> {
+): Promise<{ ok: boolean; contact?: Contact; error?: string }> {
   const res = await fetch(`${API_URL}/broadcast/contacts/${id}`, {
     method: 'PATCH',
     headers: headers(),
