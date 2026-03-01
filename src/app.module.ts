@@ -24,10 +24,10 @@ import { ConversationsModule } from './conversations/conversations.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: (() => {
-        let dbUrl = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/farmacia';
-        if (!process.env.DATABASE_URL) return dbUrl;
-        dbUrl = dbUrl.replace(/[?&]sslmode=[^&]*/g, '').replace(/[?&]$/, '');
-        return dbUrl + (dbUrl.includes('?') ? '&' : '?') + 'sslmode=no-verify';
+        const base = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/farmacia';
+        if (!process.env.DATABASE_URL) return base;
+        const sep = base.includes('?') ? '&' : '?';
+        return base + sep + 'sslmode=disable';
       })(),
       entities: [MedPrice, PdfVersion, Conversation, QueryLog, BroadcastContact, Campaign, ChatMessage],
       synchronize: true,

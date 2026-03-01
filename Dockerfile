@@ -37,6 +37,9 @@ FROM base
 # Copy built application
 COPY --from=build /app /app
 
+# Supabase SSL: accept self-signed cert in chain (Node rejects by default)
+ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+
 # Start the pre-built server; Fly expects 0.0.0.0:8080 (PORT set in fly.toml)
 EXPOSE 8080
 CMD [ "node", "dist/main.js" ]
