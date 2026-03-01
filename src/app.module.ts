@@ -23,10 +23,14 @@ import { ConversationsModule } from './conversations/conversations.module';
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/farmacia',
+      url: (() => {
+        let dbUrl = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/farmacia';
+        if (!process.env.DATABASE_URL) return dbUrl;
+        dbUrl = dbUrl.replace(/[?&]sslmode=[^&]*/g, '').replace(/[?&]$/, '');
+        return dbUrl + (dbUrl.includes('?') ? '&' : '?') + 'sslmode=no-verify';
+      })(),
       entities: [MedPrice, PdfVersion, Conversation, QueryLog, BroadcastContact, Campaign, ChatMessage],
       synchronize: true,
-      ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
     }),
     WebhookModule,
     SendModule,
