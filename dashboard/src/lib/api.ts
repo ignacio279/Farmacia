@@ -20,16 +20,30 @@ export async function getContacts(): Promise<{
 
 export interface Contact {
   id: string;
-  waUserId: string;
+  waUserId: string | null;
   name: string | null;
   email: string | null;
   birthday: string | null;
   createdAt: string;
 }
 
+export async function createContact(data: {
+  waUserId?: string;
+  name?: string;
+  email?: string;
+  birthday?: string;
+}): Promise<{ ok: boolean; contact?: Contact; error?: string }> {
+  const res = await fetch(`${API_URL}/broadcast/contacts`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
 export async function updateContact(
   id: string,
-  data: { name?: string; email?: string; birthday?: string }
+  data: { waUserId?: string; name?: string; email?: string; birthday?: string }
 ): Promise<{ ok: boolean; contact?: Contact; error?: string }> {
   const res = await fetch(`${API_URL}/broadcast/contacts/${id}`, {
     method: 'PATCH',

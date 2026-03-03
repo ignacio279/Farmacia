@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getContacts, updateContact, type Contact } from '@/lib/api';
+import { getContacts, createContact, updateContact, type Contact } from '@/lib/api';
+
+const emptyForm = { waUserId: '', name: '', email: '', birthday: '' };
 
 export default function ClientesPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Contact | null>(null);
-  const [form, setForm] = useState({ name: '', email: '', birthday: '' });
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -31,17 +34,25 @@ export default function ClientesPage() {
   const openEdit = (c: Contact) => {
     setEditing(c);
     setForm({
+      waUserId: c.waUserId ?? '',
       name: c.name ?? '',
       email: c.email ?? '',
       birthday: c.birthday ?? '',
     });
   };
 
+  const openCreate = () => {
+    setCreating(true);
+    setForm(emptyForm);
+  };
+
   const saveEdit = async () => {
     if (!editing) return;
     setSaving(true);
+    setError(null);
     try {
       const res = await updateContact(editing.id, {
+        waUserId: form.waUserId || undefined,
         name: form.name || undefined,
         email: form.email || undefined,
         birthday: form.birthday || undefined,
@@ -61,18 +72,86 @@ export default function ClientesPage() {
     }
   };
 
+  const saveCreate = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await createContact({
+        waUserId: form.waUserId || undefined,
+        name: form.name || undefined,
+        email: form.email || undefined,
+        birthday: form.birthday || undefined,
+      });
+      if (res.ok && res.contact) {
+        setContacts((prev) => [res.contact!, ...prev]);
+        setCreating(false);
+        setForm(emptyForm);
+      } else {
+        setError(res.error ?? 'Error al crear');
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al crear');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const filtered = contacts.filter(
     (c) =>
       (c.name?.toLowerCase().includes(search.toLowerCase()) ||
-        c.waUserId.includes(search) ||
+        (c.waUserId ?? '').includes(search) ||
         c.email?.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const formFields = (
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-gray-700">WhatsApp (número con código de país)</label>
+      <input
+        type="text"
+        placeholder="5491112345678"
+        value={form.waUserId}
+        onChange={(e) => setForm((f) => ({ ...f, waUserId: e.target.value }))}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+      />
+      <label className="block text-sm font-medium text-gray-700">Nombre</label>
+      <input
+        type="text"
+        value={form.name}
+        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+      />
+      <label className="block text-sm font-medium text-gray-700">Email</label>
+      <input
+        type="email"
+        value={form.email}
+        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+      />
+      <label className="block text-sm font-medium text-gray-700">Cumpleaños (YYYY-MM-DD)</label>
+      <input
+        type="text"
+        placeholder="2020-01-15"
+        value={form.birthday}
+        onChange={(e) => setForm((f) => ({ ...f, birthday: e.target.value }))}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+      />
+    </div>
   );
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Clientes</h1>
-        <p className="text-gray-600 mt-1">Contactos que escribieron al bot</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Clientes</h1>
+          <p className="text-gray-600 mt-1">Contactos del bot y clientes creados a mano</p>
+        </div>
+        <button
+          type="button"
+          onClick={openCreate}
+          className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
+        >
+          Nuevo cliente
+        </button>
       </div>
 
       {error && (
@@ -124,7 +203,7 @@ export default function ClientesPage() {
                 filtered.map((c) => (
                   <tr key={c.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm text-gray-900">{c.name || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{c.waUserId}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{c.waUserId ?? '—'}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{c.email || '—'}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{c.birthday || '—'}</td>
                     <td className="px-4 py-3 text-sm text-gray-500">
@@ -150,31 +229,8 @@ export default function ClientesPage() {
       {editing && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-10 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Editar contacto</h2>
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">Nombre</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-              <label className="block text-sm font-medium text-gray-700">Cumpleaños (YYYY-MM-DD)</label>
-              <input
-                type="text"
-                placeholder="2020-01-15"
-                value={form.birthday}
-                onChange={(e) => setForm((f) => ({ ...f, birthday: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Editar cliente</h2>
+            {formFields}
             <div className="mt-6 flex justify-end gap-2">
               <button
                 type="button"
@@ -190,6 +246,33 @@ export default function ClientesPage() {
                 className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
               >
                 {saving ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {creating && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-10 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Nuevo cliente</h2>
+            <p className="text-sm text-gray-500 mb-3">Todos los campos son opcionales.</p>
+            {formFields}
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setCreating(false)}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={saveCreate}
+                disabled={saving}
+                className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
+              >
+                {saving ? 'Creando...' : 'Crear'}
               </button>
             </div>
           </div>

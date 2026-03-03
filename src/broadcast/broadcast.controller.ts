@@ -32,10 +32,11 @@ export class BroadcastController {
   async updateContact(
     @Headers('x-api-key') apiKey: string,
     @Param('id') id: string,
-    @Body() body: { name?: string; email?: string; birthday?: string },
+    @Body() body: { waUserId?: string; name?: string; email?: string; birthday?: string },
   ) {
     this.checkApiKey(apiKey);
     const contact = await this.broadcast.updateContact(id, {
+      waUserId: body.waUserId,
       name: body.name,
       email: body.email,
       birthday: body.birthday,
@@ -43,6 +44,31 @@ export class BroadcastController {
     if (!contact) {
       return { ok: false, error: 'Contact not found' };
     }
+    return {
+      ok: true,
+      contact: {
+        id: contact.id,
+        waUserId: contact.waUserId,
+        name: contact.name,
+        email: contact.email,
+        birthday: contact.birthday,
+        createdAt: contact.createdAt,
+      },
+    };
+  }
+
+  @Post('contacts')
+  async createContact(
+    @Headers('x-api-key') apiKey: string,
+    @Body() body: { waUserId?: string; name?: string; email?: string; birthday?: string },
+  ) {
+    this.checkApiKey(apiKey);
+    const contact = await this.broadcast.createContact({
+      waUserId: body.waUserId,
+      name: body.name,
+      email: body.email,
+      birthday: body.birthday,
+    });
     return {
       ok: true,
       contact: {

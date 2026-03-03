@@ -31,16 +31,43 @@ export class BroadcastService {
     return this.repo.save(contact);
   }
 
+  /** Crea un contacto a mano. Todos los campos opcionales. */
+  async createContact(data: {
+    waUserId?: string | null;
+    name?: string | null;
+    email?: string | null;
+    birthday?: string | null;
+  }): Promise<BroadcastContact> {
+    const wa = data.waUserId?.trim();
+    const normalized = wa ? wa.replace(/\D/g, '') || null : null;
+    const contact = this.repo.create({
+      waUserId: normalized,
+      name: data.name?.trim() || null,
+      email: data.email?.trim() || null,
+      birthday: data.birthday?.trim() || null,
+    });
+    return this.repo.save(contact);
+  }
+
   async getAllContacts(): Promise<BroadcastContact[]> {
     return this.repo.find({ order: { createdAt: 'ASC' } });
   }
 
   async updateContact(
     id: string,
-    data: { name?: string | null; email?: string | null; birthday?: string | null },
+    data: {
+      waUserId?: string | null;
+      name?: string | null;
+      email?: string | null;
+      birthday?: string | null;
+    },
   ): Promise<BroadcastContact | null> {
     const contact = await this.repo.findOne({ where: { id } });
     if (!contact) return null;
+    if (data.waUserId !== undefined) {
+      const wa = data.waUserId?.trim();
+      contact.waUserId = wa ? wa.replace(/\D/g, '') || null : null;
+    }
     if (data.name !== undefined) contact.name = data.name?.trim() || null;
     if (data.email !== undefined) contact.email = data.email?.trim() || null;
     if (data.birthday !== undefined) contact.birthday = data.birthday?.trim() || null;
@@ -52,6 +79,7 @@ export class BroadcastService {
     let sent = 0;
     let failed = 0;
     for (const c of contacts) {
+      if (!c.waUserId) continue;
       try {
         await this.whatsapp.sendText(c.waUserId, message);
         sent++;
@@ -83,6 +111,7 @@ export class BroadcastService {
     let sent = 0;
     let failed = 0;
     for (const c of contacts) {
+      if (!c.waUserId) continue;
       try {
         const text = this.applyTemplate(message.trim(), c.name);
         await this.whatsapp.sendText(c.waUserId, text);
