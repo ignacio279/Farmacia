@@ -6,7 +6,7 @@ export class BroadcastContact {
   id: string;
 
   /** WhatsApp user ID (teléfono con código de país, sin +). Opcional para clientes creados a mano. */
-  @Column({ name: 'wa_user_id', unique: true, nullable: true, length: 20 })
+  @Column({ type: 'varchar', name: 'wa_user_id', unique: true, nullable: true, length: 20 })
   @Index()
   waUserId: string | null;
 
